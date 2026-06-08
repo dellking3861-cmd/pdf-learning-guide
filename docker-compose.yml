@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: pdf-learning-mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: pdf-learning-guide
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - pdf-learning-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pdf-learning-backend
+    ports:
+      - '5000:5000'
+    environment:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/pdf-learning-guide?authSource=admin
+      JWT_SECRET: your_jwt_secret_key
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      CLIENT_URL: http://localhost:5173
+    depends_on:
+      - mongodb
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    networks:
+      - pdf-learning-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: pdf-learning-frontend
+    ports:
+      - '5173:5173'
+    environment:
+      VITE_API_URL: http://localhost:5000/api
+    depends_on:
+      - backend
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    networks:
+      - pdf-learning-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  pdf-learning-network:
+    driver: bridge
