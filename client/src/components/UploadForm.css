@@ -1,0 +1,39 @@
+.upload-form{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.upload-row input[type="file"]{
+  border:1px solid #ddd;
+  padding:6px;
+}
+
+.upload-row input[type="text"], .upload-row textarea{
+  width:100%;
+  padding:8px;
+  border:1px solid #ccc;
+  border-radius:4px;
+}
+
+.upload-submit{
+  background:#2f6fed;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:4px;
+  cursor:pointer;
+}
+
+.upload-submit:disabled{
+  opacity:0.6;
+  cursor:default;
+}
+
+.upload-error{
+  color:#c0392b;
+}
+
+.upload-success{
+  color:#27ae60;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
+import UploadForm from '../components/UploadForm';
 
 export default function Dashboard() {
   const [user, setUser] = useState(null);
@@ -32,6 +33,7 @@ export default function Dashboard() {
 
   const fetchPDFs = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('token');
       const response = await fetch('/api/pdfs', {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -40,6 +42,10 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json();
         setPdfs(data);
+      } else if (response.status === 401) {
+        window.location.href = '/auth';
+      } else {
+        setError('Failed to fetch PDFs');
       }
     } catch (err) {
       setError('Failed to fetch PDFs');
@@ -51,6 +57,12 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/auth';
+  };
+
+  // Called when UploadForm finishes and returns the created PDF object
+  const handleUpload = (newPdf) => {
+    // Prepend the newly uploaded pdf so it appears immediately in the list
+    setPdfs(prev => [newPdf, ...(prev || [])]);
   };
 
   if (loading) {
@@ -73,7 +85,11 @@ export default function Dashboard() {
         <section className="dashboard-section">
           <div className="section-header">
             <h2>Available Learning Materials</h2>
-            <button className="upload-btn">+ Upload PDF</button>
+            {/* Replaced the simple upload button with a full upload form component */}
+          </div>
+
+          <div style={{ marginBottom: '16px' }}>
+            <UploadForm onUpload={handleUpload} />
           </div>
 
           {error && <div className="error-message">{error}</div>}
@@ -93,7 +109,7 @@ export default function Dashboard() {
                     <span className="pdf-category">{pdf.category}</span>
                     <span className="pdf-pages">{pdf.totalPages} pages</span>
                   </div>
-                  <button className="view-btn">View Modules</button>
+                  <a href={`/api/pdfs/download/${pdf._id}`} className="view-btn">View / Download</a>
                 </div>
               ))}
             </div>
